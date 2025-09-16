@@ -1,7 +1,47 @@
 import streamlit as st
 import pandas as pd
 
-# Проверка зависимостей
+# ================== СТИЛИ ==================
+st.markdown("""
+    <style>
+    /* Общий фон */
+    .stApp {
+        background-color: #2b2b2b;
+        color: #f0f0f0;
+    }
+
+    /* Заголовки */
+    h1, h2, h3, h4 {
+        color: #9b59b6 !important;
+    }
+
+    /* Текст */
+    .stMarkdown p, .stText, .stDataFrame {
+        color: #f0f0f0 !important;
+    }
+
+    /* Кнопки */
+    .stButton>button, .stDownloadButton>button {
+        background-color: #9b59b6;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+    }
+
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        background-color: #884ea0;
+        color: #ffffff;
+    }
+
+    /* Сайдбар */
+    section[data-testid="stSidebar"] {
+        background-color: #1e1e1e;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ================== ПРОВЕРКА ЗАВИСИМОСТЕЙ ==================
 st.sidebar.header("Проверка зависимостей")
 try:
     import openpyxl
@@ -9,11 +49,11 @@ try:
 except ImportError as e:
     st.sidebar.error(f"❌ Проблема с зависимостями: {e}")
 
-# Заголовок
+# ================== ГЛАВНЫЙ ЭКРАН ==================
 st.title("Генератор отчётов по времени")
 st.write("Загрузите Excel-файл и получите сводный отчёт по проектам и специалистам.")
 
-# Загрузка файла
+# ================== ЗАГРУЗКА ФАЙЛА ==================
 uploaded_file = st.file_uploader("Перетащите файл .xlsx или выберите его", type=["xlsx"])
 
 def process_timesheet(df):
@@ -25,6 +65,7 @@ def process_timesheet(df):
     result.columns = ['Проект', 'Специалист', 'Часы']
     return result
 
+# ================== ОБРАБОТКА И ВЫГРУЗКА ==================
 if uploaded_file is not None:
     try:
         df = pd.read_excel(uploaded_file, engine='openpyxl')
