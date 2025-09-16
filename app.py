@@ -1,3 +1,7 @@
+try:
+    import openpyxl
+except ImportError:
+    st.error("openpyxl не установлен.")
 import streamlit as st
 import pandas as pd
 
