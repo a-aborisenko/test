@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import openpyxl
 import io
 
 # --- Функция обработки данных ---
@@ -39,21 +38,63 @@ def create_download_link(df):
 # --- Интерфейс Streamlit ---
 def main():
     st.set_page_config(page_title="Генератор отчётов по времени", layout="wide")
-    st.markdown(
-        "<h1 style='color:#1f77b4;'>Генератор отчётов по времени</h1>", unsafe_allow_html=True)
+
+    # Кастомные стили: тёмный графитовый фон, фиолетовые заголовки и кнопки
+    st.markdown("""
+        <style>
+        /* Фон - темный графитовый */
+        .main {
+            background-color: #2e2e2e;
+            color: #cccccc;
+        }
+        /* Заголовок (h1) - фиолетовый */
+        h1 {
+            color: #7b3fbf !important;
+        }
+        /* Кнопки - фиолетовый фон и белый текст */
+        button.css-1emrehy.edgvbvh3 {
+            background-color: #7b3fbf !important;
+            color: white !important;
+            border: none !important;
+        }
+        /* При наведении на кнопки — чуть светлее фиолетовый */
+        button.css-1emrehy.edgvbvh3:hover {
+            background-color: #956edd !important;
+            color: white !important;
+        }
+        /* Цвет текста по умолчанию - светло-серый */
+        .css-1d391kg p, .css-1d391kg span, .stText {
+            color: #cccccc;
+        }
+        /* Фон и текст для selectbox */
+        div[role="combobox"] > div {
+            background-color: #3a3a3a !important;
+            color: #cccccc !important;
+        }
+        /* Scrollbar для таблиц и списков */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #7b3fbf;
+            border-radius: 4px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<h1>Генератор отчётов по времени</h1>", unsafe_allow_html=True)
     st.write("Загрузите Excel-файл (.xlsx) с данными учёта времени. После обработки появится сводная таблица и статистика.")
     uploaded_file = st.file_uploader("Drag-and-drop Excel (.xlsx)", type="xlsx")
     proj_filter = None
     if uploaded_file:
         try:
-            df = pd.read_excel(uploaded_file)
-            # Показываем фильтр по проекту, если есть проекты
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
             all_projects = sorted(df['Имя активности'].unique())
             proj_filter = st.selectbox("Фильтр по проекту", ["Все"] + all_projects)
             project = proj_filter if proj_filter != "Все" else None
             with st.spinner("Обработка данных..."):
                 result = process_timesheet(df, project)
-            # Статистика
             n_projects = result['Проект'].nunique()
             n_specialists = result['Специалист'].nunique()
             total_hours = result['Часы'].sum()
@@ -61,10 +102,8 @@ def main():
             st.write(f"**Уникальных проектов:** {n_projects}")
             st.write(f"**Уникальных специалистов:** {n_specialists}")
             st.write(f"**Всего часов:** {total_hours:.2f}")
-            # Просмотр таблицы
             st.subheader("Первые 10 строк отчёта")
             st.dataframe(result.head(10))
-            # Кнопка скачивания
             st.download_button("Скачать отчёт (Excel)", data=create_download_link(result), file_name="report.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         except Exception as e:
             st.error(f"Ошибка: {str(e)}")
