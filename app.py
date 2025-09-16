@@ -10,21 +10,19 @@ def process_timesheet(df, proj_filter=None):
         raise ValueError(f"В файле отсутствуют необходимые столбцы: {', '.join(missing)}")
     if df.empty:
         raise ValueError("Файл пуст или не содержит данных.")
-    # Проверка числовых значений
+    # Конвертация в число без округления
     df['Записанные часы'] = pd.to_numeric(df['Записанные часы'], errors='coerce')
     if df['Записанные часы'].isnull().any():
         raise ValueError("В столбце 'Записанные часы' есть нечисловые значения.")
-    # Фильтрация по проекту (если требуется)
     if proj_filter:
         df = df[df['Имя активности'] == proj_filter]
-    # Группировка и округление
+    # Группировка без округления
     result = (
         df.groupby(['Имя активности', 'Полное название'])['Записанные часы']
         .sum()
         .reset_index()
         .sort_values(['Имя активности', 'Полное название'])
     )
-    result['Записанные часы'] = result['Записанные часы'].round(2)
     result.columns = ['Проект', 'Специалист', 'Часы']
     return result
 
@@ -101,7 +99,7 @@ def main():
             st.success("Данные успешно обработаны!")
             st.write(f"**Уникальных проектов:** {n_projects}")
             st.write(f"**Уникальных специалистов:** {n_specialists}")
-            st.write(f"**Всего часов:** {total_hours:.2f}")
+            st.write(f"**Всего часов:** {total_hours}")
             st.subheader("Первые 10 строк отчёта")
             st.dataframe(result.head(10))
             st.download_button("Скачать отчёт (Excel)", data=create_download_link(result), file_name="report.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
